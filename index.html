@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="/static/index.js"></script>
+        <title>Test a Web Component</title>
+    </head>
+    <body>
+        <form method="post" onsubmit="postForm(event);">
+            <label for="title">Title</label>
+            <input type="text" name="title">
+            <label for="author">Author</label>
+            <input type="text" name="author">
+            <label for="year">Year</label>
+            <input type="text" name="year">
+            <button type="submit">Submit</button>
+        </form>
+        <dynamic-widget name="my-widget" data-foo="bar" data-baz="qux"></dynamic-widget>
+    </body>
+    <script>
+        const postForm = async (e) => {
+            e.preventDefault();
+            const fd = new FormData();
+            const props = {};
+            for (let element of e.target.elements) {
+                if (element.type !== "submit") {
+                    props[element.name] = element.value;
+                    fd.append(element.name, element.value);
+                }
+            }
+            const response = await fetch(
+                '/add-book',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ...props
+                    })
+                }
+            );
+            const json = await response.json();
+            if (json.status === 'ok') {
+                reloadDynamicWidget('my-widget');
+                e.target.reset();
+            }
+        }
+
+    </script>
+</html>
