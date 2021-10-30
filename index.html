@@ -44,7 +44,7 @@
             );
             const json = await response.json();
             if (json.status === 'ok') {
-                reloadDynamicWidget('my-widget');
+                reloadDynamicWidget('my-widget', { foo: 'qux', baz: 'bar'});
                 e.target.reset();
             }
         }

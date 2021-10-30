@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:9999'
+const BASE_URL = 'http://192.168.0.154:3000'
 
 class DynamicWidget extends HTMLElement {
   constructor() {
@@ -11,8 +11,19 @@ class DynamicWidget extends HTMLElement {
   connectedCallback() {
     this.loadInitalContents();
   }
-
+  
   async loadInitalContents() {
+    await this._loadContents();
+  }
+
+  async reloadContents(argObj) {
+    for (let k of Object.getOwnPropertyNames(argObj)) {
+      this.dataset[k] = argObj[k];
+    }
+    await this._loadContents();
+  }
+
+  async _loadContents() {
     const dwName = this.getAttribute('name');
     if (this.hasAttribute('elem') && this.getAttribute('elem') !== 'div') {
       this.shadowRoot.firstChild.replaceWith(document.createElement(this.getAttribute('elem')));
@@ -29,34 +40,11 @@ class DynamicWidget extends HTMLElement {
     // Parse newBody for <script> tags to add them to the DOM manually...
     root.innerHTML = initContents.newBody;
   }
-
-  async reloadContents(...args) {
-    const dwName = this.getAttribute('name');
-    const root = this.shadowRoot.firstChild;
-    // Update this element's dataset with provided args
-    // (TODO: does this prevent using attributeChangedCallback?)
-    for (let k of Object.getOwnPropertyNames(args)) {
-      this.dataset[k] = args[k];
-    }
-    let newArgs = {...this.dataset};
-    const url = new URL('/dynamic-widget', BASE_URL);
-    url.searchParams.append('name', dwName);
-    for (let k of Object.getOwnPropertyNames(newArgs)) {
-      url.searchParams.append(k, newArgs[k]);
-    }
-    const response = await fetch(url);
-    const refreshContents = await response.json();
-    root.innerHTML = refreshContents.newBody;
-  }
-
-  attributeChangedCallback() {
-    console.log('An attribute has been changed!!');
-  }
 }
 
 customElements.define('dynamic-widget', DynamicWidget);
 
-const reloadDynamicWidget = (name, ...args) => {
+const reloadDynamicWidget = (name, argObj) => {
   const dynamicWidget = document.querySelector(`dynamic-widget[name="${name}"]`);
-  dynamicWidget.reloadContents(...args);
+  dynamicWidget.reloadContents(argObj);
 }

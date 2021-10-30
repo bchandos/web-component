@@ -63,7 +63,6 @@ def dynamic_widget():
     
     return json.dumps({
         'newBody': newBody,
-        'uuid': uuid,
     })
 
 
@@ -95,4 +94,4 @@ def load_sql_from_template(template, **kwargs):
     return results
             
 
-run(app, host='localhost', port=9999)
+run(app, host='0.0.0.0', port=3000)
