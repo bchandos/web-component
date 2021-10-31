@@ -1,4 +1,4 @@
-const BASE_URL = 'http://192.168.0.154:3000'
+const BASE_URL = 'http://localhost:3000'
 
 class DynamicWidget extends HTMLElement {
   constructor() {
