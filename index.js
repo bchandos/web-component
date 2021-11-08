@@ -33,6 +33,9 @@ class DynamicWidget extends HTMLElement {
   }
 
   connectedCallback() {
+    if (this.hasAttribute('elem') && this.getAttribute('elem') !== 'div') {
+      this.shadowRoot.firstChild.replaceWith(document.createElement(this.getAttribute('elem')));
+    }
     this.loadInitalContents();
   }
   
@@ -50,9 +53,6 @@ class DynamicWidget extends HTMLElement {
   async _loadContents() {
     this.loadingAnimation();
     const dwName = this.getAttribute('name');
-    if (this.hasAttribute('elem') && this.getAttribute('elem') !== 'div') {
-      this.shadowRoot.firstChild.replaceWith(document.createElement(this.getAttribute('elem')));
-    }
     const root = this.shadowRoot.firstChild;
     const args = { ...this.dataset }
     const url = new URL('/dynamic-widget', BASE_URL);
@@ -63,7 +63,16 @@ class DynamicWidget extends HTMLElement {
     const response = await fetch(url);
     const initContents = await response.json();
     // Parse newBody for <script> tags to add them to the DOM manually...
-    root.innerHTML = initContents.newBody;
+    const re = /<script[\s\S]*?>([\s\S]*?)<\/script>/gi;
+    root.innerHTML = initContents.newBody.replace(re, '');
+    const matches = initContents.newBody.matchAll(re);
+    for (let match of matches) {
+      const code = match[1].trim();
+      const scriptTag = document.createElement('script');
+      scriptTag.textContent = code;
+      root.appendChild(scriptTag);
+    }
+    // Add newBody to the page.
     this.clearLoading();
   }
 
