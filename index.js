@@ -43,7 +43,12 @@ class DynamicWidget extends HTMLElement {
     await this._loadContents();
   }
 
-  async reloadContents(argObj) {
+  async reloadContents(argObj, clearArgs) {
+    if (clearArgs === true) {
+      for (let k in this.dataset) {
+        delete this.dataset[k];
+      }
+    }
     for (let k of Object.getOwnPropertyNames(argObj)) {
       this.dataset[k] = argObj[k];
     }
@@ -101,7 +106,7 @@ class DynamicWidget extends HTMLElement {
 
 customElements.define('dynamic-widget', DynamicWidget);
 
-const reloadDynamicWidget = (name, argObj) => {
+const reloadDynamicWidget = (name, argObj, clearArgs=false) => {
   const dynamicWidget = document.querySelector(`dynamic-widget[name="${name}"]`);
-  dynamicWidget.reloadContents(argObj);
+  dynamicWidget.reloadContents(argObj, clearArgs);
 }

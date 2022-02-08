@@ -30,7 +30,10 @@ conn = sqlite3.connect(':memory:')
 conn.row_factory = sqlite3.Row
 cur = conn.cursor()
 cur.execute('create table books (id primary key, title, author, year);')
-cur.execute('insert into books values (1, "The Origin of Species", "Darwin, Charles", 1859)')
+with open('example-book-list.json', 'r') as json_file:
+    books = json.load(json_file)
+for book in books:
+    cur.execute('insert into books (title, author, year) values (?, ?, ?)', (book['title'], book['author'], book['year']))
 conn.commit()
 
 ####  END SETUP ####
@@ -59,7 +62,7 @@ def dynamic_widget():
     filename = f'{args["name"]}.html'
     results = load_sql_from_template(filename, **args)
     template = env.get_template(filename)
-    newBody = template.render(**results, **args)
+    newBody = template.render(**results, **args, _selfId=args['name'])
     
     return json.dumps({
         'newBody': newBody,
@@ -88,10 +91,14 @@ def load_sql_from_template(template, **kwargs):
             elif 'key:' in comment:
                 key = comment.split(':')[1].strip()
         q_args = {k: v for k, v in kwargs.items() if k in expected_args}
+        if set(q_args) != set(expected_args):
+            # In the case that the expected arguments are not provided
+            # do not execute query 
+            continue
         result = q_(conn, **q_args)
         results[key] = result
     
     return results
-            
+
 
 run(app, host='0.0.0.0', port=3000)

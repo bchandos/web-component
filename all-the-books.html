@@ -1,0 +1,42 @@
+{# queries:
+
+    -- name: search_books
+    -- args: ["title", "author", "year"]
+    -- key: all_books
+    -- Search for specific books in the database
+    select * from books
+    where title like '%' || :title || '%'
+    and author like '%' || :author || '%'
+    and year like '%' || :year || '%';
+    
+    -- name: get_books
+    -- args: []
+    -- key: all_books
+    -- Get all books in database
+    select * from books;
+
+#}
+{% set in_search_mode = True if (title or author or year) else False %}
+
+{% if in_search_mode %}
+    <h3>
+        Search Results
+        {% for search_term in [type, term in (('Title', title), ('Author', author), ('Year', year)) if term] %}
+            <span class="search-tag">{{type}}: {{term}}</span>
+        {% endfor %}
+    </h3>
+{% else %}
+    <h3>All The Books</h3>
+{% endif %}
+<ul>
+    {% for book in all_books %}
+    <li>
+        <em>{{ book.title }}</em> - {{ book.author }}, {{ book.year }}
+    </li>
+    {% else %}
+        <em>No books!</em>
+    {% endfor %}
+</ul>
+<script>
+    console.log('hello world');
+</script>
